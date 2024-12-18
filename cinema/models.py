@@ -1,5 +1,5 @@
-import os
 import uuid
+from pathlib import Path
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -47,8 +47,7 @@ class Movie(models.Model):
     duration = models.IntegerField(default=90)
     genres = models.ManyToManyField(Genre)
     actors = models.ManyToManyField(Actor)
-    image = models.ImageField(upload_to="uploads/movies/",
-                              null=True, blank=True)
+    image = models.ImageField(upload_to="uploads/movies/", blank=True)
 
     class Meta:
         ordering = ["title"]
@@ -56,9 +55,9 @@ class Movie(models.Model):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs):
+    def rename_image_and_save(self, *args, **kwargs):
         if self.image:
-            ext = os.path.splitext(self.image.name)[1]
+            ext = Path(self.image.name).suffix
             unique_id = uuid.uuid4()
             self.image.name = f"{slugify(self.title)}-{unique_id}{ext}"
         super().save(*args, **kwargs)
